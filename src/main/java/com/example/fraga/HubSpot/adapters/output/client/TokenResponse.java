@@ -1,4 +1,4 @@
-package com.example.fraga.HubSpot.infrastructure.client;
+package com.example.fraga.HubSpot.adapters.output.client;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

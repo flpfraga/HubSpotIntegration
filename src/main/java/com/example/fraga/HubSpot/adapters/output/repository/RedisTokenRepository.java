@@ -1,4 +1,4 @@
-package com.example.fraga.HubSpot.application.service;
+package com.example.fraga.HubSpot.adapters.output.repository;
 
 import com.example.fraga.HubSpot.domain.model.Token;
 import com.example.fraga.HubSpot.port.output.TokenStorage;
@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class TokenStorageService implements TokenStorage {
+public class RedisTokenRepository implements TokenStorage {
 
     private final RedisTemplate<String, Token> redisTemplate;
 

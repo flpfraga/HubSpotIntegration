@@ -1,6 +1,5 @@
-package com.example.fraga.HubSpot.infrastructure.client;
+package com.example.fraga.HubSpot.adapters.output.client;
 
-import com.example.fraga.HubSpot.domain.model.Token;
 import com.example.fraga.HubSpot.port.output.AuthClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;

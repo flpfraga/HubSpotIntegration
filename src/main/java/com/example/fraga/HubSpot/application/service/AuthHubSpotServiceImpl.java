@@ -3,8 +3,8 @@ package com.example.fraga.HubSpot.application.service;
 import com.example.fraga.HubSpot.adapters.input.auth.AuthRequest;
 import com.example.fraga.HubSpot.adapters.input.auth.AuthResponse;
 import com.example.fraga.HubSpot.domain.model.Token;
-import com.example.fraga.HubSpot.infrastructure.client.TokenRequest;
-import com.example.fraga.HubSpot.infrastructure.client.TokenResponse;
+import com.example.fraga.HubSpot.adapters.output.client.TokenRequest;
+import com.example.fraga.HubSpot.adapters.output.client.TokenResponse;
 import com.example.fraga.HubSpot.port.input.AuthHubSpotUseCase;
 import com.example.fraga.HubSpot.port.output.AuthClient;
 import com.example.fraga.HubSpot.port.output.CryptoService;
@@ -82,16 +82,4 @@ public class AuthHubSpotServiceImpl implements AuthHubSpotUseCase {
     public void validateToken(String accessToken) {
         validateTokenInHubSpotApi(accessToken);
     }
-
-    private Token findTokenByState(String state) {
-        return tokenStorage.findTokenById(state)
-                .orElseThrow(
-                        RuntimeException::new
-                );
-    }
-
-    private Boolean tokenIsValid(String code) {
-        return authClient.validateCallback(code);
-    }
-
-} 
+}
