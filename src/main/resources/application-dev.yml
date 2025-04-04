@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+
+logging:
+  level:
+    root: INFO
+    com.hubspot: DEBUG
+
+spring:
+  redis:
+    host: localhost
+    port: 6379
+    timeout : 60000
+
+#--------------CLIENT HUBSPOT-----------
+##Validar token
+hubspot:
+  api:
+    key: 10393311
+    base-url: https://api.hubapi.com
+    authorization-url: https://app.hubspot.com/oauth/authorize
+    redirect-uri: http://localhost:8080/api/v1/auth/callback
+  token-validation:
+    uri: /integrations/v1/me
