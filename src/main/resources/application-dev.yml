@@ -18,6 +18,9 @@ spring:
     host: localhost
     port: 6379
     timeout : 60000
+  security:
+    filter:
+      order: 10
 
 #--------------CLIENT HUBSPOT-----------
 ##Validar token
@@ -29,3 +32,8 @@ hubspot:
     redirect-uri: http://localhost:8080/api/v1/auth/callback
   token-validation:
     uri: /integrations/v1/me
+
+#--------------SECURITY-----------
+crypto:
+  key: 1234567890abcdef
+  iv: abcdef1234567890

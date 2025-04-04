@@ -2,13 +2,21 @@ package com.example.fraga.HubSpot.adapters.output.client;
 
 import com.example.fraga.HubSpot.domain.model.Contact;
 import com.example.fraga.HubSpot.port.output.CrmClient;
+import com.fasterxml.jackson.databind.JsonNode;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 
+import java.time.Duration;
 import java.util.Map;
 
+@Service
+@Slf4j
 public class HubspotCrmClient implements CrmClient {
 
     private final WebClient webClient;
