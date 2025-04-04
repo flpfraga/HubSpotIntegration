@@ -5,7 +5,7 @@ import com.example.fraga.HubSpot.infrastructure.client.TokenRequest;
 import com.example.fraga.HubSpot.infrastructure.client.TokenResponse;
 
 public interface AuthClient {
-    Boolean validateCallback(String code);
+    Boolean validateCallback(String accessToken);
 
     TokenResponse exchangeCodeForToken(TokenRequest tokenRequest);
 }

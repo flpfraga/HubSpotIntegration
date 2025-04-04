@@ -6,10 +6,9 @@ import com.example.fraga.HubSpot.domain.model.Token;
 import com.example.fraga.HubSpot.infrastructure.client.TokenRequest;
 import com.example.fraga.HubSpot.infrastructure.client.TokenResponse;
 import com.example.fraga.HubSpot.port.input.AuthHubSpotUseCase;
-import com.example.fraga.HubSpot.port.input.CryptoService;
 import com.example.fraga.HubSpot.port.output.AuthClient;
+import com.example.fraga.HubSpot.port.output.CryptoService;
 import com.example.fraga.HubSpot.port.output.TokenStorage;
-import io.micrometer.common.util.StringUtils;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -58,14 +57,21 @@ public class AuthHubSpotServiceImpl implements AuthHubSpotUseCase {
 
     @Override
     public AuthResponse handleCallback(String code, String state) {
-        generateToken(state, code);
-        validateToken(code, state);
+        var tokenReponse = generateToken(state, code);
+        validateTokenInHubSpotApi(tokenReponse.getAccess_token());
         return new AuthResponse(null, state, code);
+    }
+
+    private void validateTokenInHubSpotApi(String accessToken){
+        if (Boolean.FALSE.equals(authClient.validateCallback(accessToken))){
+            throw new RuntimeException("Ocorreu um erro na validação do token.");
+        }
     }
 
     private TokenResponse generateToken(String state, String code) {
         var token = tokenStorage.findTokenById(state)
                 .orElseThrow(() -> new RuntimeException("erro ao buscar no redis"));
+        token.setClientSecret(cryptoService.decrypt(token.getClientSecret()));
         TokenRequest tokenRequest = mapper.map(token, TokenRequest.class);
         tokenRequest.setCode(code);
         tokenRequest.setRedirectUri(redirectUri);
@@ -73,14 +79,8 @@ public class AuthHubSpotServiceImpl implements AuthHubSpotUseCase {
     }
 
     @Override
-    public void validateToken(String code, String state) {
-        if (StringUtils.isBlank(code) || StringUtils.isBlank(state)) {
-            throw new RuntimeException("token ou code invalido");
-        }
-        if (tokenIsValid(code)) {
-            tokenStorage.updateAccessToken(state, code);
-        }
-        throw new RuntimeException("token invalido");
+    public void validateToken(String accessToken) {
+        validateTokenInHubSpotApi(accessToken);
     }
 
     private Token findTokenByState(String state) {
