@@ -1,4 +1,4 @@
-package com.example.fraga.HubSpot.infrastructure.security;
+package com.example.fraga.HubSpot.infrastructure.security.crypto;
 
 import com.example.fraga.HubSpot.port.output.CryptoService;
 import org.springframework.beans.factory.annotation.Value;
