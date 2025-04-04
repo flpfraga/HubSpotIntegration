@@ -45,25 +45,31 @@ public class HubSpotWebClient implements AuthClient {
                 .block();
     }
 
-    public Mono<Token> exchangeCodeForToken(Token token) {
+    @Override
+    public TokenResponse exchangeCodeForToken(TokenRequest tokenRequest) {
         return webClient.post()
                 .uri("/oauth/v1/token")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(BodyInserters
                         .fromFormData("grant_type", "authorization_code")
-                        .with("client_id", token.getClientId())
-                        .with("client_secret", token.)
-                        .with("redirect_uri", redirectUri)
-                        .with("code", code)
+                        .with("client_id", tokenRequest.getClientId())
+                        .with("client_secret", tokenRequest.getClientSecret())
+                        .with("redirect_uri", tokenRequest.getRedirectUri())
+                        .with("code", tokenRequest.getCode())
                 )
                 .retrieve()
                 .bodyToMono(TokenResponse.class)
-                .map(res -> new Token(
-                        clientId,
-                        res.getAccess_token(),
-                        res.getRefresh_token(),
-                        null // ou algum estado, se você quiser manter
-                ));
+                .block();
+    }
+
+    private Long convertToLongOrNull(String data){
+        try{
+            return Long.getLong(data);
+        }
+        catch (Exception e){
+            log.info("Erro ao converter o valor de expiração.");
+        }
+        return null;
     }
 }
 
