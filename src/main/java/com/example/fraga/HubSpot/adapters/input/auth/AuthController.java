@@ -2,12 +2,19 @@ package com.example.fraga.HubSpot.adapters.input.auth;
 
 import com.example.fraga.HubSpot.adapters.input.models.DefaultController;
 import com.example.fraga.HubSpot.adapters.input.models.DefaultResponse;
+import com.example.fraga.HubSpot.domain.exception.BusinessException;
+import com.example.fraga.HubSpot.domain.exception.ErrorCode;
+import com.example.fraga.HubSpot.domain.exception.InfrastructureException;
 import com.example.fraga.HubSpot.port.input.AuthHubSpotUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -24,10 +31,14 @@ public class AuthController implements DefaultController {
     }
 
     @GetMapping("/callback")
-    @Operation(summary = "Callback de autenticação", description = "Endpoint de callback após autenticação no HubSpot")
-    public  ResponseEntity<DefaultResponse<AuthResponse>> handleCallback(
-            @RequestParam("code") String code,
-            @RequestParam("state") String state) {
-        return success(authHubSpotUseCase.handleCallback(code, state));
+    public ModelAndView handleCallback(@RequestParam("code") String code, @RequestParam("state") String state) {
+        try {
+            AuthResponse token = authHubSpotUseCase.handleCallback(code, state);
+            ModelAndView model = new ModelAndView("auth/success");
+            model.addObject("token", token);
+            return model;
+        } catch (Exception e) {
+            return new ModelAndView("auth/error");
+        }
     }
 } 

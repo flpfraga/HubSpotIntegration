@@ -59,7 +59,12 @@ public class AuthHubSpotServiceImpl implements AuthHubSpotUseCase {
     public AuthResponse handleCallback(String code, String state) {
         var tokenReponse = generateToken(state, code);
         validateTokenInHubSpotApi(tokenReponse.getAccess_token());
-        return new AuthResponse(null, state, code);
+        return new AuthResponse(
+                null,
+                state,
+                tokenReponse.getAccess_token(),
+                tokenReponse.getRefresh_token(),
+                Long.getLong(tokenReponse.getExpires_in()));
     }
 
     private void validateTokenInHubSpotApi(String accessToken){
