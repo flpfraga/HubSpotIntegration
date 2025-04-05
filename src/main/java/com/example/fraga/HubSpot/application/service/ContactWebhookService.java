@@ -18,6 +18,9 @@ import java.util.stream.Collectors;
 @Transactional
 public class ContactWebhookService implements ContactWebhookUseCase {
 
+    private static final String STATUS_SUCCESS = "SUCCESS";
+    private static final String STATUS_ERROR = "ERROR";
+
     private final ContactRepositoryPort contactRepository;
     private final WebhookConfig webhookConfig;
 
@@ -27,18 +30,36 @@ public class ContactWebhookService implements ContactWebhookUseCase {
     }
 
     @Override
-    public void processContactCreation(Map<String, Contact> eventContact,String secret) {
+    public void processContactCreation(Contact contact) {
         try {
-            filterByEvent(eventContact);
+            log.info("m=processContactCreation contact={}", contact);
+            
+            validateSecretToken(contact.getSecret());
+            filterByEvent(contact.getProperties());
+            
+            contact.setStatus(STATUS_SUCCESS);
+            contactRepository.save(contact);
+            
+            log.info("m=processContactCreation status=success contact={}", contact);
         } catch (Exception e) {
+            log.error("m=processContactCreation status=error contact={} exception={} message={}", 
+                contact, e.getClass().getSimpleName(), e.getMessage());
+            contact.setStatus(STATUS_ERROR);
+            contact.setErrorMessage(e.getMessage());
+            contactRepository.save(contact);
             throw e;
         }
     }
 
-    private Set<Contact> filterByEvent(Map<String, Contact> eventContact) {
-        return eventContact.entrySet().stream().filter(
-                event -> webhookConfig.getEvent().equalsIgnoreCase(event.getKey()))
-                .map(Map.Entry::getValue)
-                .collect(Collectors.toSet());
+    private void validateSecretToken(String receivedSecret) {
+        if (!webhookConfig.getSecretToken().equals(receivedSecret)) {
+            throw new SecurityException("Secret token inválido");
+        }
+    }
+
+    private void filterByEvent(Map<String, Object> properties) {
+        if (!properties.containsKey(webhookConfig.getEvent())) {
+            throw new IllegalArgumentException("Evento não encontrado no payload");
+        }
     }
 } 
