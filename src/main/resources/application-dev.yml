@@ -12,19 +12,30 @@ logging:
   level:
     root: INFO
     com.hubspot: DEBUG
+    com.example.fraga.HubSpot: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.data.redis: INFO
+    io.lettuce.core: INFO
 
 spring:
-  redis:
-    host: localhost
-    port: 6379
-    timeout : 60000
   data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 60000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1
     mongodb:
       host: localhost
       port: 27017
       database: hubspot
-      username: admin
-      password: admin123
+      username: ${MONGODB_USERNAME:admin}
+      password: ${MONGODB_PASSWORD:admin123}
       authentication-database: admin
   security:
     filter:
@@ -34,20 +45,25 @@ spring:
 ##Validar token
 hubspot:
   api:
-    key: 10393311
+    key: ${HUBSPOT_API_KEY:10393311}
     base-url: https://api.hubapi.com
     authorization-url: https://app.hubspot.com/oauth/authorize
     redirect-uri: http://localhost:8080/api/v1/auth/callback
   token-validation:
     uri: /integrations/v1/me
   webhook:
-    secret: your-webhook-secret
+    secret: ${WEBHOOK_SECRET:your-webhook-secret}
     subscription-types:
       - contact.creation
-    secret-token: your-secret-token
+    secret-token: ${WEBHOOK_SECRET_TOKEN:your-secret-token}
     event: contact.creation
 
 #--------------SECURITY-----------
+security:
+  jwt:
+    secret: ${JWT_SECRET:your-secret-key}
+    expiration: ${JWT_EXPIRATION:86400000}
+
 crypto:
-  key: 1234567890abcdef
-  iv: abcdef1234567890
+  key: ${CRYPTO_KEY:1234567890abcdef}
+  iv: ${CRYPTO_IV:abcdef1234567890}

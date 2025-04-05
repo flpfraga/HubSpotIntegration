@@ -1,6 +1,12 @@
 package com.example.fraga.HubSpot.domain.exception;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorCode {
+    // Autenticação
+    UNAUTHORIZED("401", "Não autorizado"),
+    
     // Validação
     INVALID_SECRET_TOKEN("INVALID_SECRET_TOKEN", "Token de segurança inválido"),
     INVALID_EVENT("INVALID_EVENT", "Evento inválido"),

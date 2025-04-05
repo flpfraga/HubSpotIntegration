@@ -2,17 +2,11 @@ package com.example.fraga.HubSpot.adapters.input.auth;
 
 import com.example.fraga.HubSpot.adapters.input.models.DefaultController;
 import com.example.fraga.HubSpot.adapters.input.models.DefaultResponse;
-import com.example.fraga.HubSpot.domain.exception.BusinessException;
-import com.example.fraga.HubSpot.domain.exception.ErrorCode;
-import com.example.fraga.HubSpot.domain.exception.InfrastructureException;
 import com.example.fraga.HubSpot.port.input.AuthHubSpotUseCase;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -24,7 +18,7 @@ public class AuthController implements DefaultController {
 
     private final AuthHubSpotUseCase authHubSpotUseCase;
 
-    @PostMapping("/url")
+    @PostMapping
     @Operation(summary = "Gera URL de autorização", description = "Gera uma URL para redirecionamento ao HubSpot para autenticação")
     public ResponseEntity<DefaultResponse<AuthResponse>> generateAuthorizationUrl(@RequestBody AuthRequest request) {
         return success(authHubSpotUseCase.generateAuthorizationUrl(request));
