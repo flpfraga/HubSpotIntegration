@@ -17,11 +17,11 @@ import java.util.Map;
 
 @Service
 @Slf4j
-public class HubspotCrmClient implements CrmClient {
+public class HubSpotCrmClient implements CrmClient {
 
     private final WebClient webClient;
 
-    public HubspotCrmClient(@Qualifier("hubspotWebClient") WebClient webClient) {
+    public HubSpotCrmClient(@Qualifier("hubspotWebClient") WebClient webClient) {
         this.webClient = webClient;
     }
 

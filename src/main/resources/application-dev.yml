@@ -18,6 +18,14 @@ spring:
     host: localhost
     port: 6379
     timeout : 60000
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: hubspot
+      username: admin
+      password: admin123
+      authentication-database: admin
   security:
     filter:
       order: 10
@@ -32,6 +40,12 @@ hubspot:
     redirect-uri: http://localhost:8080/api/v1/auth/callback
   token-validation:
     uri: /integrations/v1/me
+  webhook:
+    secret: your-webhook-secret
+    subscription-types:
+      - contact.creation
+    secret-token: your-secret-token
+    event: contact.creation
 
 #--------------SECURITY-----------
 crypto:

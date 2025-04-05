@@ -1,4 +1,4 @@
-package com.example.fraga.HubSpot.adapters.input.contact;
+package com.example.fraga.HubSpot.adapters.input.contactCreate;
 
 import lombok.Data;
 
