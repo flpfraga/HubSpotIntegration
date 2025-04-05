@@ -1,10 +1,16 @@
 package com.example.fraga.HubSpot.application.service;
 
 import com.example.fraga.HubSpot.config.WebhookConfig;
+import com.example.fraga.HubSpot.domain.exception.BusinessException;
+import com.example.fraga.HubSpot.domain.exception.ErrorCode;
+import com.example.fraga.HubSpot.domain.exception.InfrastructureException;
+import com.example.fraga.HubSpot.domain.exception.ValidationException;
 import com.example.fraga.HubSpot.domain.model.Contact;
 import com.example.fraga.HubSpot.port.input.ContactWebhookUseCase;
 import com.example.fraga.HubSpot.port.output.ContactRepositoryPort;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,36 +36,40 @@ public class ContactWebhookService implements ContactWebhookUseCase {
     }
 
     @Override
-    public void processContactCreation(Contact contact) {
+    public void processContactCreation(Map<String, Contact> eventContact, String secret) {
         try {
-            log.info("m=processContactCreation contact={}", contact);
-            
-            validateSecretToken(contact.getSecret());
-            filterByEvent(contact.getProperties());
-            
-            contact.setStatus(STATUS_SUCCESS);
-            contactRepository.save(contact);
-            
-            log.info("m=processContactCreation status=success contact={}", contact);
+            validateSecretToken(secret);
+            Set<Contact> validEvents = filterByEvent(eventContact);
+            log.info("m=processContactCreation status=success");
+        } catch (RedisConnectionFailureException | SerializationException e) {
+            logError(e);
+            throw new InfrastructureException(ErrorCode.DATABASE_ERROR.getCode(), e.getMessage());
         } catch (Exception e) {
-            log.error("m=processContactCreation status=error contact={} exception={} message={}", 
-                contact, e.getClass().getSimpleName(), e.getMessage());
-            contact.setStatus(STATUS_ERROR);
-            contact.setErrorMessage(e.getMessage());
-            contactRepository.save(contact);
-            throw e;
+            logError(e);
+            throw new InfrastructureException(
+                    ErrorCode.INTERNAL_ERROR.getCode(), e.getMessage()
+            );
         }
     }
 
-    private void validateSecretToken(String receivedSecret) {
-        if (!webhookConfig.getSecretToken().equals(receivedSecret)) {
-            throw new SecurityException("Secret token inválido");
+    private static void logError(Exception e) {
+        log.error("m=processContactCreation status=error exception={} message={}",
+                e.getClass().getSimpleName(), e.getMessage());
+    }
+
+    private void validateSecretToken(String secret) {
+        if (!webhookConfig.getSecretToken().equals(secret)) {
+            throw new ValidationException(
+                    ErrorCode.INVALID_SECRET_TOKEN.getCode(),
+                    ErrorCode.INVALID_SECRET_TOKEN.getMessage()
+            );
         }
     }
 
-    private void filterByEvent(Map<String, Object> properties) {
-        if (!properties.containsKey(webhookConfig.getEvent())) {
-            throw new IllegalArgumentException("Evento não encontrado no payload");
-        }
+    private Set<Contact>  filterByEvent(Map<String, Contact> eventContact) {
+        return eventContact.entrySet().stream()
+                .filter(event -> webhookConfig.getEvent().equalsIgnoreCase(event.getKey()))
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toSet());
     }
 } 

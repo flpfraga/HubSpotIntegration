@@ -1,7 +1,9 @@
 package com.example.fraga.HubSpot.application.service;
 
-import com.example.fraga.HubSpot.adapters.input.contactCreate.ContactRequest;
-import com.example.fraga.HubSpot.adapters.input.contactCreate.ContactResponse;
+import com.example.fraga.HubSpot.domain.exception.BusinessException;
+import com.example.fraga.HubSpot.domain.exception.ErrorCode;
+import com.example.fraga.HubSpot.domain.exception.InfrastructureException;
+import com.example.fraga.HubSpot.domain.exception.ValidationException;
 import com.example.fraga.HubSpot.domain.model.Contact;
 import com.example.fraga.HubSpot.port.input.ContactUseCase;
 import com.example.fraga.HubSpot.port.output.ContactRepositoryPort;
@@ -27,50 +29,52 @@ public class ContactService implements ContactUseCase {
 
     @Override
     @Transactional
-    public ContactResponse createContact(ContactRequest request) {
-        Contact contact = createContactFromRequest(request);
-        contact = saveContactWithStatus(contact, STATUS_PENDING);
-
+    public Contact createContact(Contact contact) {
         try {
-            Contact createdInHubSpot = crmClient.create(contact, "");
-            updateContactStatus(contact, STATUS_SUCCESS);
-            return createSuccessResponse(createdInHubSpot);
-        } catch (Exception e) {
-            handleError(contact, e);
+            log.info("m=createContact contact={}", contact);
+            
+            validateContact(contact);
+            
+            contact.setStatus(STATUS_PENDING);
+            contact = contactRepository.save(contact);
+            
+            log.info("m=createContact status=success contact={}", contact);
+            return contact;
+        } catch (ValidationException | BusinessException e) {
+            log.error("m=createContact status=error contact={} exception={} message={}", 
+                contact, e.getClass().getSimpleName(), e.getMessage());
+            contact.setStatus(STATUS_ERROR);
+            contact.setErrorMessage(e.getMessage());
+            contactRepository.save(contact);
             throw e;
+        } catch (Exception e) {
+            log.error("m=createContact status=error contact={} exception={} message={}", 
+                contact, e.getClass().getSimpleName(), e.getMessage());
+            contact.setStatus(STATUS_ERROR);
+            contact.setErrorMessage(e.getMessage());
+            contactRepository.save(contact);
+            throw new InfrastructureException(
+                ErrorCode.INTERNAL_ERROR.getCode(),
+                ErrorCode.INTERNAL_ERROR.getMessage(),
+                e.getMessage()
+            );
         }
     }
 
-    private Contact createContactFromRequest(ContactRequest request) {
-        return Contact.builder()
-                .email(request.getEmail())
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .createdAt(LocalDateTime.now())
-                .build();
-    }
+    private void validateContact(Contact contact) {
+        if (contact.getEmail() == null || contact.getEmail().isEmpty()) {
+            throw new ValidationException(
+                ErrorCode.INVALID_CONTACT_DATA.getCode(),
+                ErrorCode.INVALID_CONTACT_DATA.getMessage(),
+                "Email é obrigatório"
+            );
+        }
 
-    private Contact saveContactWithStatus(Contact contact, String status) {
-        contact.setStatus(status);
-        Contact savedContact = contactRepository.save(contact);
-        log.info("Contato salvo com status {}: {}", status, savedContact);
-        return savedContact;
-    }
-
-    private void updateContactStatus(Contact contact, String status) {
-        contact.setStatus(status);
-        contactRepository.save(contact);
-        log.info("Status do contato atualizado para {}: {}", status, contact);
-    }
-
-    private ContactResponse createSuccessResponse(Contact contact) {
-        return new ContactResponse(contact.getEmail(), "Contato criado com sucesso");
-    }
-
-    private void handleError(Contact contact, Exception e) {
-        log.error("Erro ao criar contato: {}", e.getMessage());
-        contact.setStatus(STATUS_ERROR);
-        contact.setErrorMessage(e.getMessage());
-        contactRepository.save(contact);
+        if (contactRepository.findByEmail(contact.getEmail()).isPresent()) {
+            throw new BusinessException(
+                ErrorCode.CONTACT_ALREADY_EXISTS.getCode(),
+                ErrorCode.CONTACT_ALREADY_EXISTS.getMessage()
+            );
+        }
     }
 }

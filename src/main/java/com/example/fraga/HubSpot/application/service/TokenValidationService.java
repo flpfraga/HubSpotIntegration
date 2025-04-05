@@ -22,11 +22,9 @@ public class TokenValidationService implements TokenValidationUseCase {
         try {
             String encryptedToken = cryptoService.encrypt(token);
             Token storedToken = tokenRepository.findByEncryptedToken(encryptedToken);
-            
             if (storedToken == null || storedToken.isExpired()) {
                 return false;
             }
-            
             return true;
         } catch (Exception e) {
             return false;
