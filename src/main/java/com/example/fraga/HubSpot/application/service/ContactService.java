@@ -1,80 +1,58 @@
 package com.example.fraga.HubSpot.application.service;
 
-import com.example.fraga.HubSpot.domain.exception.BusinessException;
+import com.example.fraga.HubSpot.adapters.input.contactCreate.ContactRequest;
+import com.example.fraga.HubSpot.adapters.input.contactCreate.ContactResponse;
 import com.example.fraga.HubSpot.domain.exception.ErrorCode;
 import com.example.fraga.HubSpot.domain.exception.InfrastructureException;
-import com.example.fraga.HubSpot.domain.exception.ValidationException;
 import com.example.fraga.HubSpot.domain.model.Contact;
 import com.example.fraga.HubSpot.port.input.ContactUseCase;
 import com.example.fraga.HubSpot.port.output.ContactRepositoryPort;
 import com.example.fraga.HubSpot.port.output.CrmClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
+import org.springframework.data.redis.RedisConnectionFailureException;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ContactService implements ContactUseCase {
 
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_SUCCESS = "SUCCESS";
-    private static final String STATUS_ERROR = "ERROR";
-
     private final CrmClient crmClient;
     private final ContactRepositoryPort contactRepository;
+    private final ModelMapper mapper;
 
     @Override
     @Transactional
-    public Contact createContact(Contact contact) {
+    public ContactResponse createContact(ContactRequest contactRequest, String accessToken) {
         try {
-            log.info("m=createContact contact={}", contact);
-            
-            validateContact(contact);
-            
-            contact.setStatus(STATUS_PENDING);
+            Contact contact = mapper.map(contactRequest, Contact.class);
+
+            crmClient.create(contact, accessToken);
+
             contact = contactRepository.save(contact);
-            
-            log.info("m=createContact status=success contact={}", contact);
-            return contact;
-        } catch (ValidationException | BusinessException e) {
-            log.error("m=createContact status=error contact={} exception={} message={}", 
-                contact, e.getClass().getSimpleName(), e.getMessage());
-            contact.setStatus(STATUS_ERROR);
-            contact.setErrorMessage(e.getMessage());
-            contactRepository.save(contact);
-            throw e;
+
+            log.info("m=createContact status=success contactRequest={}", contactRequest);
+            return mapper.map(contact, ContactResponse.class);
+        } catch (RedisConnectionFailureException | SerializationException e) {
+            logError(e);
+            throw new InfrastructureException(ErrorCode.DATABASE_ERROR.getCode(), e.getMessage());
+        } catch (WebClientResponseException e) {
+            logError(e);
+            throw new InfrastructureException(ErrorCode.CLIENT_ERROR.getCode(), e.getMessage());
         } catch (Exception e) {
-            log.error("m=createContact status=error contact={} exception={} message={}", 
-                contact, e.getClass().getSimpleName(), e.getMessage());
-            contact.setStatus(STATUS_ERROR);
-            contact.setErrorMessage(e.getMessage());
-            contactRepository.save(contact);
+            logError(e);
             throw new InfrastructureException(
-                ErrorCode.INTERNAL_ERROR.getCode(),
-                ErrorCode.INTERNAL_ERROR.getMessage(),
-                e.getMessage()
+                    ErrorCode.INTERNAL_ERROR.getCode(), e.getMessage()
             );
         }
     }
-
-    private void validateContact(Contact contact) {
-        if (contact.getEmail() == null || contact.getEmail().isEmpty()) {
-            throw new ValidationException(
-                ErrorCode.INVALID_CONTACT_DATA.getCode(),
-                ErrorCode.INVALID_CONTACT_DATA.getMessage(),
-                "Email é obrigatório"
-            );
-        }
-
-        if (contactRepository.findByEmail(contact.getEmail()).isPresent()) {
-            throw new BusinessException(
-                ErrorCode.CONTACT_ALREADY_EXISTS.getCode(),
-                ErrorCode.CONTACT_ALREADY_EXISTS.getMessage()
-            );
-        }
+    private void logError(Exception e) {
+        log.error("m=processContactCreation status=error exception={} message={}",
+                e.getClass().getSimpleName(), e.getMessage());
     }
 }

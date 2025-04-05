@@ -21,9 +21,4 @@ public class Contact {
     private String email;
     private String firstName;
     private String lastName;
-    private Map<String, Object> properties;
-    private String secret;
-    private LocalDateTime createdAt;
-    private String status;
-    private String errorMessage;
 }

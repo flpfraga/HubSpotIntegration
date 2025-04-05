@@ -14,6 +14,7 @@ public enum ErrorCode {
     // Infraestrutura
     HUBSPOT_API_ERROR("HUBSPOT_API_ERROR", "Erro na comunicação com a API do HubSpot"),
     DATABASE_ERROR("DATABASE_ERROR", "Erro ao acessar o banco de dados"),
+    CLIENT_ERROR("CLIENT_ERROR", "Erro na execução do Client"),
     INTERNAL_ERROR("INTERNAL_ERROR", "Erro interno do servidor");
 
     private final String code;

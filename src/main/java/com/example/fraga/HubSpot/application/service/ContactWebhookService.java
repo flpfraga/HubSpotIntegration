@@ -24,9 +24,6 @@ import java.util.stream.Collectors;
 @Transactional
 public class ContactWebhookService implements ContactWebhookUseCase {
 
-    private static final String STATUS_SUCCESS = "SUCCESS";
-    private static final String STATUS_ERROR = "ERROR";
-
     private final ContactRepositoryPort contactRepository;
     private final WebhookConfig webhookConfig;
 
@@ -52,7 +49,7 @@ public class ContactWebhookService implements ContactWebhookUseCase {
         }
     }
 
-    private static void logError(Exception e) {
+    private void logError(Exception e) {
         log.error("m=processContactCreation status=error exception={} message={}",
                 e.getClass().getSimpleName(), e.getMessage());
     }

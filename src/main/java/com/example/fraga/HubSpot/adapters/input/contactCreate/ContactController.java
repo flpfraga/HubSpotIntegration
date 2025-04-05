@@ -22,21 +22,18 @@ public class ContactController implements DefaultController {
     private final ContactUseCase contactUseCase;
 
     @Operation(
-        summary = "Cria um novo contato",
-        description = "Endpoint para criar um novo contato no sistema e no HubSpot"
+            summary = "Cria um novo contato",
+            description = "Endpoint para criar um novo contato no sistema e no HubSpot"
     )
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Contato criado com sucesso"),
-        @ApiResponse(responseCode = "400", description = "Dados do contato inválidos"),
-        @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
+            @ApiResponse(responseCode = "200", description = "Contato criado com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Dados do contato inválidos"),
+            @ApiResponse(responseCode = "500", description = "Erro interno do servidor")
     })
     @PostMapping
-    public ResponseEntity<DefaultResponse<ContactResponse>> create(@RequestBody ContactRequest request) {
-        log.info("m=create request={}", request);
-        
-        ContactResponse response = contactUseCase.createContact(request);
-        
-        log.info("m=create status=success response={}", response);
-        return success(response);
+    public ResponseEntity<DefaultResponse<ContactResponse>> create(
+            @RequestHeader("Authorization") String accessToken,
+            @RequestBody ContactRequest contactRequest) {
+        return success(contactUseCase.createContact(contactRequest, accessToken));
     }
 }

@@ -9,5 +9,4 @@ public class AuthResponse {
     private final String authorizationUrl;
     private final String state;
     private final String accessToken;
-
 }
