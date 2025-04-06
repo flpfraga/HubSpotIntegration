@@ -1,8 +1,10 @@
 package com.example.fraga.HubSpot.adapters.output.client;
 
+import com.example.fraga.HubSpot.domain.exception.BusinessException;
 import com.example.fraga.HubSpot.domain.model.Contact;
 import com.example.fraga.HubSpot.port.output.CrmClient;
 import com.fasterxml.jackson.databind.JsonNode;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
@@ -26,6 +28,7 @@ public class HubSpotCrmClient implements CrmClient {
     }
 
     @Override
+    @CircuitBreaker(name = "hubspotClient", fallbackMethod = "fallbackCreate")
     public Contact create(Contact contact, String accessToken) {
         Map<String, Object> properties = Map.of(
                 "properties", Map.of(
@@ -54,5 +57,10 @@ public class HubSpotCrmClient implements CrmClient {
                         .build())
                 .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(5)))
                 .block();
+    }
+
+    public Contact fallbackCreate(Contact contact, String accessToken, Throwable ex) {
+        log.error("Fallback ativado para criação de contato: {}", ex.getMessage());
+        throw new BusinessException("Serviço HubSpot indisponível. Contato não foi criado.", ex.getMessage());
     }
 }

@@ -9,5 +9,4 @@ public interface AuthHubSpotUseCase {
 
     AuthResponse handleCallback(String code, String state);
 
-    void validateToken(String accessToken);
 }

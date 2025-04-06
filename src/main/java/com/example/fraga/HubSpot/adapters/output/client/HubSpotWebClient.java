@@ -1,6 +1,8 @@
 package com.example.fraga.HubSpot.adapters.output.client;
 
+import com.example.fraga.HubSpot.domain.exception.BusinessException;
 import com.example.fraga.HubSpot.port.output.AuthClient;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +28,7 @@ public class HubSpotWebClient implements AuthClient {
     }
 
     @Override
+    @CircuitBreaker(name = "hubspotTokenValidation", fallbackMethod = "fallbackValidateCallback")
     public Boolean validateCallback(String accessToken) {
         return webClient.get()
                 .uri(validationUri)
@@ -44,7 +47,13 @@ public class HubSpotWebClient implements AuthClient {
                 .block();
     }
 
+    public Boolean fallbackValidateCallback(String accessToken, Throwable ex) {
+        log.error("Fallback ativado para validação de token: {}", ex.getMessage());
+        throw new BusinessException("Erro ao validar o token no HubSpot.", ex.getMessage());
+    }
+
     @Override
+    @CircuitBreaker(name = "hubspotTokenExchange", fallbackMethod = "fallbackExchangeCodeForToken")
     public TokenResponse exchangeCodeForToken(TokenRequest tokenRequest) {
         return webClient.post()
                 .uri("/oauth/v1/token")
@@ -61,14 +70,10 @@ public class HubSpotWebClient implements AuthClient {
                 .block();
     }
 
-    private Long convertToLongOrNull(String data){
-        try{
-            return Long.getLong(data);
-        }
-        catch (Exception e){
-            log.info("Erro ao converter o valor de expiração.");
-        }
-        return null;
+    public TokenResponse fallbackExchangeCodeForToken(TokenRequest tokenRequest, Throwable ex) {
+        log.error("Fallback ativado para troca de código por token: {}", ex.getMessage());
+        throw new BusinessException("Erro ao trocar código por token no HubSpot.", ex.getMessage());
     }
+
 }
 

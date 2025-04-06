@@ -16,10 +16,3 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
-
-hubspot:
-  api:
-    key: ${HUBSPOT_API_KEY}
-
-crypto:
-  secret-key: ${CRYPTO_SECRET_KEY} 

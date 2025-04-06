@@ -1,20 +1,17 @@
 package com.example.fraga.HubSpot.application.service;
 
 import com.example.fraga.HubSpot.config.WebhookConfig;
-import com.example.fraga.HubSpot.domain.exception.BusinessException;
 import com.example.fraga.HubSpot.domain.exception.ErrorCode;
 import com.example.fraga.HubSpot.domain.exception.InfrastructureException;
 import com.example.fraga.HubSpot.domain.exception.ValidationException;
 import com.example.fraga.HubSpot.domain.model.Contact;
 import com.example.fraga.HubSpot.port.input.ContactWebhookUseCase;
-import com.example.fraga.HubSpot.port.output.ContactRepositoryPort;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -24,11 +21,9 @@ import java.util.stream.Collectors;
 @Transactional
 public class ContactWebhookService implements ContactWebhookUseCase {
 
-    private final ContactRepositoryPort contactRepository;
     private final WebhookConfig webhookConfig;
 
-    public ContactWebhookService(ContactRepositoryPort contactRepository, WebhookConfig webhookConfig) {
-        this.contactRepository = contactRepository;
+    public ContactWebhookService(WebhookConfig webhookConfig) {
         this.webhookConfig = webhookConfig;
     }
 
@@ -37,6 +32,7 @@ public class ContactWebhookService implements ContactWebhookUseCase {
         try {
             validateSecretToken(secret);
             Set<Contact> validEvents = filterByEvent(eventContact);
+            validEvents.forEach(System.out::println);
             log.info("m=processContactCreation status=success");
         } catch (RedisConnectionFailureException | SerializationException e) {
             logError(e);
