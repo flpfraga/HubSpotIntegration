@@ -2,10 +2,12 @@ package com.example.fraga.HubSpot.adapters.input.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter
 @Builder
+@EqualsAndHashCode
 public class AuthRequest {
     @NotBlank(message = "O clientId é obrigatório")
     private final String clientId;

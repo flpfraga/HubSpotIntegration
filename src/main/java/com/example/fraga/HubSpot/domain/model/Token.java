@@ -2,10 +2,7 @@ package com.example.fraga.HubSpot.domain.model;
 
 import com.example.fraga.HubSpot.shared.ConverterUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -13,6 +10,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(of="state")
+@Builder
 public class Token {
     private String clientId;
     private String accessToken;

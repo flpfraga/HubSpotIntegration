@@ -51,14 +51,13 @@ public class ContactWebhookController implements DefaultController {
             )
     })
     @PostMapping("/contact-creation")
-    public ResponseEntity<DefaultResponse<Void>> handleContactCreation(
+    public ResponseEntity<DefaultResponse<ContactWebhookResponse>> handleContactCreation(
             @Parameter(description = "Chave secreta para validação do webhook", required = true)
             @RequestHeader("X-Hubspot-Secret") String secret,
-            
+
             @Parameter(description = "Dados do contato criado no HubSpot", required = true)
             @RequestBody Map<String, Contact> eventContact) {
-        contactWebhookUseCase.processContactCreation(eventContact, secret);
-        
-        return success(null);
+
+        return success(contactWebhookUseCase.processContactCreation(eventContact, secret));
     }
 } 

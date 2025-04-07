@@ -1,4 +1,4 @@
-package com.example.fraga.HubSpot.adapters.input.contactCreate;
+package com.example.fraga.HubSpot.adapters.input.contactWebhook;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -7,8 +7,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @Builder
-@AllArgsConstructor
 @NoArgsConstructor
-public class ContactResponse {
+@AllArgsConstructor
+public class ContactWebhookResponse {
     private String message;
 }

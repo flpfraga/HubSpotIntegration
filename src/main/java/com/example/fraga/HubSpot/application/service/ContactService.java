@@ -37,7 +37,7 @@ public class ContactService implements ContactUseCase {
             contact = contactRepository.save(contact);
 
             log.info("m=createContact status=success contactRequest={}", contactRequest);
-            return mapper.map(contact, ContactResponse.class);
+            return new ContactResponse("Contato criado");
         } catch (RedisConnectionFailureException | SerializationException e) {
             logError(e);
             throw new InfrastructureException(ErrorCode.DATABASE_ERROR.getCode(), e.getMessage());

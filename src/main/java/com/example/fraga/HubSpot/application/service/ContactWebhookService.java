@@ -1,5 +1,6 @@
 package com.example.fraga.HubSpot.application.service;
 
+import com.example.fraga.HubSpot.adapters.input.contactWebhook.ContactWebhookResponse;
 import com.example.fraga.HubSpot.config.WebhookConfig;
 import com.example.fraga.HubSpot.domain.exception.ErrorCode;
 import com.example.fraga.HubSpot.domain.exception.InfrastructureException;
@@ -28,12 +29,13 @@ public class ContactWebhookService implements ContactWebhookUseCase {
     }
 
     @Override
-    public void processContactCreation(Map<String, Contact> eventContact, String secret) {
+    public ContactWebhookResponse processContactCreation(Map<String, Contact> eventContact, String secret) {
         try {
             validateSecretToken(secret);
             Set<Contact> validEvents = filterByEvent(eventContact);
             validEvents.forEach(System.out::println);
             log.info("m=processContactCreation status=success");
+            return new ContactWebhookResponse("Contratos processaods");
         } catch (RedisConnectionFailureException | SerializationException e) {
             logError(e);
             throw new InfrastructureException(ErrorCode.DATABASE_ERROR.getCode(), e.getMessage());

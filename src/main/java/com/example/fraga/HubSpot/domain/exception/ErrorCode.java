@@ -22,7 +22,8 @@ public enum ErrorCode {
     DATABASE_ERROR("DATABASE_ERROR", "Erro ao acessar o banco de dados"),
     CLIENT_ERROR("CLIENT_ERROR", "Erro na execução do Client"),
     INTERNAL_ERROR("INTERNAL_ERROR", "Erro interno do servidor"),
-    SERVICE_UNAVAILABLE("503", "Serviço indisponível");
+    SERVICE_UNAVAILABLE("503", "Serviço indisponível"),
+    INVALID_REQUEST("INVALID_REQUEST", "Requisição inválida");
 
     private final String code;
     private final String message;
