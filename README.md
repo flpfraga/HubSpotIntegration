@@ -1,115 +1,227 @@
-# API de Integração com HubSpot
+# HubSpot Integration
 
-Esta API REST foi desenvolvida para integrar com o HubSpot, permitindo o gerenciamento de contatos através de uma interface RESTful.
+Este projeto é uma integração com a API do HubSpot, fornecendo funcionalidades para autenticação, gerenciamento de contatos e processamento de webhooks.
 
-## Tecnologias Utilizadas
+## 🚀 Visão Geral
 
-- Java 17
-- Spring Boot 3.2.3
-- HubSpot API Client
-- Swagger/OpenAPI
+O projeto implementa uma integração robusta com o HubSpot, seguindo os princípios da arquitetura hexagonal (ports and adapters). Ele oferece:
+
+- Autenticação OAuth2 com HubSpot
+- Gerenciamento de tokens de acesso
+- CRUD de contatos
+- Processamento de webhooks
+- Cache com Redis
+- Segurança baseada em tokens
+
+## 📋 Pré-requisitos
+
+- Java 17+
 - Maven
-- JUnit 5
-- Mockito
+- MongoDB
+- Redis
+- Conta no HubSpot com acesso à API
 
-## Requisitos
+## 🔧 Instalação
 
-- JDK 17 ou superior
-- Maven 3.6 ou superior
-- Conta no HubSpot com API Key
+1. Clone o repositório:
+```bash
+git clone https://github.com/seu-usuario/hubspot-integration.git
+cd hubspot-integration
+```
 
-## Configuração
+2. Configure as variáveis de ambiente:
+```bash
+cp .env.example .env
+# Edite o arquivo .env com suas credenciais
+```
 
-1. Clone o repositório
-2. Configure a variável de ambiente `HUBSPOT_API_KEY` com sua chave de API do HubSpot
-3. Execute o build do projeto:
+3. Instale as dependências:
 ```bash
 mvn clean install
 ```
 
-## Executando a Aplicação
+## 🏗️ Arquitetura
 
-Para executar a aplicação localmente:
-
-```bash
-mvn spring:boot run
+### Estrutura do Projeto
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/example/fraga/HubSpot/
+│   │       ├── domain/           # Lógica de negócio
+│   │       ├── infrastructure/   # Implementações concretas
+│   │       └── port/            # Interfaces de entrada e saída
+│   └── resources/
+└── test/                        # Testes unitários e de integração
 ```
 
-A API estará disponível em `http://localhost:8080`
+### Modelagem de Domínio
 
-## Documentação da API
+#### Contact
+```java
+@Data
+@Builder
+@Document(collection = "contacts")
+public class Contact {
+    @Id
+    private String id;
+    private String email;
+    private String firstName;
+    private String lastName;
+}
+```
 
-A documentação Swagger está disponível em:
+#### Token
+```java
+@Data
+@EqualsAndHashCode(of="state")
+public class Token {
+    private String clientId;
+    private String accessToken;
+    private String refreshToken;
+    private String state;
+    private LocalDateTime expirationDate;
+}
+```
+
+## 🔄 Fluxos Principais
+
+### 1. Autenticação
+```mermaid
+sequenceDiagram
+    participant Client
+    participant App
+    participant HubSpot
+    participant Redis
+
+    Client->>App: Inicia fluxo OAuth
+    App->>HubSpot: Redireciona para login
+    HubSpot->>Client: Retorna código de autorização
+    Client->>App: Envia código
+    App->>HubSpot: Troca código por token
+    HubSpot->>App: Retorna tokens
+    App->>Redis: Armazena tokens
+```
+
+### 2. Gerenciamento de Contatos
+```mermaid
+sequenceDiagram
+    participant Client
+    participant App
+    participant HubSpot
+    participant MongoDB
+
+    Client->>App: Cria/Atualiza contato
+    App->>HubSpot: Sincroniza com HubSpot
+    HubSpot->>App: Confirma operação
+    App->>MongoDB: Persiste localmente
+```
+
+### 3. Webhooks
+```mermaid
+sequenceDiagram
+    participant HubSpot
+    participant App
+    participant MongoDB
+
+    HubSpot->>App: Notifica evento
+    App->>App: Valida assinatura
+    App->>MongoDB: Atualiza dados
+    App->>HubSpot: Confirma recebimento
+```
+
+## ⚙️ Configuração
+
+### Variáveis de Ambiente
+```env
+HUBSPOT_CLIENT_ID=seu_client_id
+HUBSPOT_CLIENT_SECRET=seu_client_secret
+HUBSPOT_REDIRECT_URI=http://localhost:8080/api/v1/auth/callback
+MONGODB_URI=mongodb://localhost:27017/hubspot
+REDIS_HOST=localhost
+REDIS_PORT=6379
+```
+
+### Configuração do HubSpot
+
+1. Acesse o [Portal de Desenvolvedores do HubSpot](https://developers.hubspot.com/)
+2. Crie uma aplicação
+3. Configure as URLs de redirecionamento
+4. Obtenha as credenciais (Client ID e Client Secret)
+
+## 🚀 Executando o Projeto
+
+1. Inicie o MongoDB:
+```bash
+mongod
+```
+
+2. Inicie o Redis:
+```bash
+redis-server
+```
+
+3. Execute a aplicação:
+```bash
+mvn spring-boot:run
+```
+
+## 📚 Documentação da API
+
+A documentação da API está disponível em:
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
-- OpenAPI JSON: `http://localhost:8080/api-docs`
+- OpenAPI: `http://localhost:8080/v3/api-docs`
 
-## Endpoints
+## 🔒 Segurança
 
-### Contatos
+- Autenticação OAuth2 com HubSpot
+- Tokens JWT para API
+- Validação de assinatura em webhooks
+- Rate limiting
+- CORS configurado
 
-#### Criar Contato
-- **POST** `/api/v1/contacts`
-- Cria um novo contato no HubSpot
+## 🧪 Testes
 
-#### Buscar Contato por ID
-- **GET** `/api/v1/contacts/{id}`
-- Retorna um contato específico do HubSpot
-
-#### Listar Todos os Contatos
-- **GET** `/api/v1/contacts`
-- Retorna todos os contatos do HubSpot
-
-#### Atualizar Contato
-- **PUT** `/api/v1/contacts/{id}`
-- Atualiza um contato existente no HubSpot
-
-#### Deletar Contato
-- **DELETE** `/api/v1/contacts/{id}`
-- Remove um contato do HubSpot
-
-## Exemplo de Uso
-
-### Criar um Contato
-
-```bash
-curl -X POST http://localhost:8080/api/v1/contacts \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "test@example.com",
-    "firstName": "John",
-    "lastName": "Doe",
-    "phone": "1234567890",
-    "company": "Test Company",
-    "website": "www.test.com",
-    "address": "123 Test St",
-    "city": "Test City",
-    "state": "Test State",
-    "zipCode": "12345",
-    "country": "Test Country"
-  }'
-```
-
-## Testes
-
-Para executar os testes:
-
+Execute os testes com:
 ```bash
 mvn test
 ```
 
-## Arquitetura
+### Cobertura de Testes
+```bash
+mvn jacoco:report
+```
 
-A aplicação foi desenvolvida seguindo os princípios da Arquitetura Limpa (Clean Architecture) e SOLID:
+## 📦 Dependências Principais
 
-- **Domain**: Contém as entidades e regras de negócio
-- **Application**: Contém os casos de uso
-- **Infrastructure**: Implementa as interfaces de repositório e configurações
-- **Interfaces**: Contém os controladores e DTOs
+- Spring Boot
+- Spring Security
+- Spring Data MongoDB
+- Spring Data Redis
+- Reactor
+- Lombok
+- JUnit
+- Mockito
 
-## Contribuição
+## 🤝 Contribuindo
 
-1. Faça um fork do projeto
+1. Fork o projeto
 2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
 3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
 4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request 
+5. Abra um Pull Request
+
+## 📝 Licença
+
+Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📞 Suporte
+
+Para suporte, envie um email para suporte@exemplo.com ou abra uma issue no GitHub.
+
+## 🔗 Links Úteis
+
+- [Documentação do HubSpot](https://developers.hubspot.com/docs/api/overview)
+- [Spring Boot Documentation](https://spring.io/projects/spring-boot)
+- [MongoDB Documentation](https://docs.mongodb.com/)
+- [Redis Documentation](https://redis.io/documentation) 
