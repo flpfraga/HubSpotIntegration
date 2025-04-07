@@ -1,0 +1,175 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
+		"name": "HubSpot Integration",
+		"description": "Collection para os endpoints da integração com HubSpot",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Autenticação",
+			"description": "Endpoints relacionados à autenticação OAuth2 com HubSpot",
+			"item": [
+				{
+					"name": "Gerar URL de Autorização",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"clientId\": \"seu-client-id\",\n    \"clientSecret\": \"seu-client-secret\",\n    \"scope\": \"contacts\",\n    \"state\": \"estado-aleatorio\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth"]
+						},
+						"description": "Gera a URL de autorização para iniciar o fluxo OAuth2"
+					},
+					"response": []
+				},
+				{
+					"name": "Processar Callback OAuth",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/api/v1/auth/callback?code={{auth_code}}&state={{state}}",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "auth", "callback"],
+							"query": [
+								{
+									"key": "code",
+									"value": "{{auth_code}}"
+								},
+								{
+									"key": "state",
+									"value": "{{state}}"
+								}
+							]
+						},
+						"description": "Processa o callback do OAuth2 após autorização"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Contatos",
+			"description": "Endpoints para gerenciamento de contatos",
+			"item": [
+				{
+					"name": "Criar Contato",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@example.com\",\n    \"firstName\": \"João\",\n    \"lastName\": \"Silva\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/contacts",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "contacts"]
+						},
+						"description": "Cria um novo contato no HubSpot"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Webhooks",
+			"description": "Endpoints para processamento de webhooks",
+			"item": [
+				{
+					"name": "Processar Criação de Contato",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-HubSpot-Signature",
+								"value": "{{webhook_signature}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"event\": \"contact.creation\",\n    \"contact\": {\n        \"email\": \"test@example.com\",\n        \"firstName\": \"João\",\n        \"lastName\": \"Silva\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/v1/webhook/contact-creation",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "webhook", "contact-creation"]
+						},
+						"description": "Processa eventos de criação de contato via webhook"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "seu-access-token",
+			"type": "string"
+		},
+		{
+			"key": "auth_code",
+			"value": "seu-codigo-de-autorizacao",
+			"type": "string"
+		},
+		{
+			"key": "state",
+			"value": "estado-aleatorio",
+			"type": "string"
+		},
+		{
+			"key": "webhook_signature",
+			"value": "assinatura-do-webhook",
+			"type": "string"
+		}
+	]
+} 
