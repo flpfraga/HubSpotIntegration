@@ -12,20 +12,78 @@ logging:
   level:
     root: INFO
     com.hubspot: DEBUG
+    com.example.fraga.HubSpot: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.data.redis: INFO
+    io.lettuce.core: INFO
 
 spring:
-  redis:
-    host: localhost
-    port: 6379
-    timeout : 60000
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 0
+      timeout: 60000
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+          max-wait: -1
+    mongodb:
+      host: localhost
+      port: 27017
+      database: hubspot
+      username: ${MONGODB_USERNAME:admin}
+      password: ${MONGODB_PASSWORD:admin123}
+      authentication-database: admin
+  security:
+    filter:
+      order: 10
 
 #--------------CLIENT HUBSPOT-----------
 ##Validar token
 hubspot:
   api:
-    key: 10393311
+    key: ${HUBSPOT_API_KEY:10393311}
     base-url: https://api.hubapi.com
+    timeout: 5s
     authorization-url: https://app.hubspot.com/oauth/authorize
     redirect-uri: http://localhost:8080/api/v1/auth/callback
   token-validation:
     uri: /integrations/v1/me
+  webhook:
+    secret: ${WEBHOOK_SECRET:your-webhook-secret}
+    subscription-types:
+      - contact.creation
+    secret-token: ${WEBHOOK_SECRET_TOKEN:your-secret-token}
+    event: contact.creation
+    retry:
+      attempts: 3
+      delay: 2s
+
+
+#--------------SECURITY-----------
+security:
+  jwt:
+    secret: ${JWT_SECRET:your-secret-key}
+    expiration: ${JWT_EXPIRATION:86400000}
+
+crypto:
+  key: ${CRYPTO_KEY:1234567890abcdef}
+  iv: ${CRYPTO_IV:abcdef1234567890}
+
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      hubspotClient:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 15s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        register-health-indicator: true
+        event-consumer-buffer-size: 10

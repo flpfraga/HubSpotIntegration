@@ -5,16 +5,14 @@ spring:
 server:
   port: 8080
 
+logging:
+  level:
+    root: INFO
+    com.hubspot: DEBUG
+
 springdoc:
   api-docs:
     path: /api-docs
   swagger-ui:
     path: /swagger-ui.html
     operationsSorter: method
-
-hubspot:
-  api:
-    key: ${HUBSPOT_API_KEY}
-
-crypto:
-  secret-key: ${CRYPTO_SECRET_KEY} 

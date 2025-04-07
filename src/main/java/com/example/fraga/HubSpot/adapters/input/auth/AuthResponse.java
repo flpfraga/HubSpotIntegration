@@ -9,5 +9,6 @@ public class AuthResponse {
     private final String authorizationUrl;
     private final String state;
     private final String accessToken;
-
+    private final String refreshToken;
+    private final Long expiresIn;
 }

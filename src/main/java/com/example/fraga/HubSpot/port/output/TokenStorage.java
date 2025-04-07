@@ -1,5 +1,6 @@
 package com.example.fraga.HubSpot.port.output;
 
+import com.example.fraga.HubSpot.adapters.output.client.TokenResponse;
 import com.example.fraga.HubSpot.domain.model.Token;
 
 import java.util.Optional;
@@ -8,7 +9,7 @@ public interface TokenStorage {
 
     void saveTokenData(Token token);
 
-    Optional<Token> findTokenById(String state);
+    Optional<Token> findTokenByState(String state);
 
-    Token updateAccessToken(String state, String accessToken);
+    void updateTokenAfterGenerate(TokenResponse tokenResponse, String state);
 }

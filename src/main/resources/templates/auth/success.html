@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autenticação Bem-sucedida</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .token-container {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .copy-btn {
+            cursor: pointer;
+        }
+        .copy-btn:hover {
+            opacity: 0.8;
+        }
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h4 class="mb-0">Autenticação Bem-sucedida</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="token-container">
+                            <h5>Access Token</h5>
+                            <div class="d-flex align-items-center">
+                                <code class="flex-grow-1" th:text="${token.accessToken}"></code>
+                                <button class="btn btn-sm btn-outline-secondary copy-btn ms-2" 
+                                        onclick="copyToClipboard('accessToken', this)">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="token-container">
+                            <h5>Refresh Token</h5>
+                            <div class="d-flex align-items-center">
+                                <code class="flex-grow-1" th:text="${token.refreshToken}"></code>
+                                <button class="btn btn-sm btn-outline-secondary copy-btn ms-2"
+                                        onclick="copyToClipboard('refreshToken', this)">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="token-container">
+                            <h5>Expira em</h5>
+                            <p class="mb-0" th:text="${token.expiresIn} + ' segundos'"></p>
+                        </div>
+
+                        <div class="token-container">
+                            <h5>URL de Autorização</h5>
+                            <p class="mb-0" th:text="${token.authorizationUrl}"></p>
+                        </div>
+
+                        <div class="token-container">
+                            <h5>State</h5>
+                            <p class="mb-0" th:text="${token.state}"></p>
+                        </div>
+
+                        <div class="mt-4">
+                            <a href="/" class="btn btn-primary">Voltar para Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <strong class="me-auto">Sucesso</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            Token copiado para a área de transferência!
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const toast = new bootstrap.Toast(document.querySelector('.toast'));
+
+        function copyToClipboard(tokenType, button) {
+            const token = document.querySelector('code[th\\:text="\\${token.' + tokenType + '}"]').textContent;
+            navigator.clipboard.writeText(token).then(() => {
+                const icon = button.querySelector('i');
+                icon.className = 'bi bi-check';
+                toast.show();
+                setTimeout(() => {
+                    icon.className = 'bi bi-clipboard';
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html> 
