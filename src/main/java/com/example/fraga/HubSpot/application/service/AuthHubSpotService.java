@@ -11,12 +11,15 @@ import com.example.fraga.HubSpot.port.input.AuthHubSpotUseCase;
 import com.example.fraga.HubSpot.port.output.AuthClient;
 import com.example.fraga.HubSpot.port.output.CryptoService;
 import com.example.fraga.HubSpot.port.output.TokenStorage;
-import jakarta.xml.bind.ValidationException;
+import com.example.fraga.HubSpot.shared.ConverterUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Service
 @Slf4j
@@ -53,7 +56,10 @@ public class AuthHubSpotService implements AuthHubSpotUseCase {
                 .authorizationUrl(UriComponentsBuilder.fromHttpUrl(authorizationUrl)
                         .queryParam("client_id", authRequest.getClientId())
                         .queryParam("redirect_uri", redirectUri)
-                        .queryParam("scope", authRequest.getScope())
+                        .queryParam("scope",
+                                URLEncoder.encode(authRequest.getScope(), StandardCharsets.UTF_8)
+                                        .replace("+", "%20")
+                        )
                         .queryParam("state", authRequest.getState())
                         .queryParam("response_type", "code")
                         .build()
@@ -66,28 +72,34 @@ public class AuthHubSpotService implements AuthHubSpotUseCase {
     public AuthResponse handleCallback(String code, String state) {
         var tokenReponse = generateToken(state, code);
         validateTokenInHubSpotApi(tokenReponse.getAccess_token());
+
+        updateTokenAfterGenerate(tokenReponse, state);
         log.info("m=handleCallback status=success");
         return new AuthResponse(
                 null,
                 state,
                 tokenReponse.getAccess_token(),
                 tokenReponse.getRefresh_token(),
-                Long.getLong(tokenReponse.getExpires_in()));
+                ConverterUtils.converterStringToLong(tokenReponse.getExpires_in()));
+    }
+
+    private void updateTokenAfterGenerate(TokenResponse tokenResponse, String state) {
+        tokenStorage.updateTokenAfterGenerate(tokenResponse, state);
     }
 
     private void validateTokenInHubSpotApi(String accessToken) {
-        if (Boolean.FALSE.equals(authClient.validateCallback(accessToken))){
+        if (Boolean.FALSE.equals(authClient.validadeGeneratedToken(accessToken))) {
             logError();
-            throw new BusinessException(ErrorCode.INVALID_SECRET_TOKEN.getCode(), "Erro na validação do token.");
+            throw new BusinessException(ErrorCode.UNAUTHORIZED.getCode(), "Erro na validação do token.");
         }
     }
 
     private TokenResponse generateToken(String state, String code) {
-        var token = tokenStorage.findTokenById(state)
+        var token = tokenStorage.findTokenByState(state)
                 .orElseThrow(() -> {
                     logError();
-                    return new BusinessException(ErrorCode.INVALID_SECRET_TOKEN.getCode(),
-                            "Erro ao buscar no Redis");
+                    return new BusinessException(ErrorCode.UNAUTHORIZED.getCode(),
+                            "State não encontrado.");
                 });
         token.setClientSecret(cryptoService.decrypt(token.getClientSecret()));
         TokenRequest tokenRequest = mapper.map(token, TokenRequest.class);

@@ -42,7 +42,6 @@ public class HubSpotAuthenticationFilter extends OncePerRequestFilter {
         
         log.debug("m=shouldNotFilter path={} contextPath={} fullPath={}", path, contextPath, fullPath);
         
-        // Ignora endpoints públicos (alinhado com SecurityConfig)
         return path.startsWith("/api/v1/auth") ||
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/v3/api-docs");
@@ -54,7 +53,6 @@ public class HubSpotAuthenticationFilter extends OncePerRequestFilter {
                                   FilterChain filterChain) throws ServletException, IOException {
         
         try {
-            // Se chegou aqui, é um endpoint que requer autenticação
             String token = extractToken(request);
             String state = extractState(request);
             
@@ -93,7 +91,7 @@ public class HubSpotAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private void validateTokenAndState(String token, String state) {
-        Token storedToken = tokenStorage.findTokenById(state)
+        Token storedToken = tokenStorage.findTokenByState(state)
             .orElseThrow(() -> new BusinessException(
                 ErrorCode.UNAUTHORIZED.getCode(),
                 "Token não encontrado"
@@ -113,6 +111,9 @@ public class HubSpotAuthenticationFilter extends OncePerRequestFilter {
             );
         }
     }
+
+
+
 
     private String extractToken(HttpServletRequest request) {
         String bearerToken = request.getHeader(AUTHORIZATION_HEADER);

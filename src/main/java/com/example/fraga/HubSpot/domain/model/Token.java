@@ -1,5 +1,7 @@
 package com.example.fraga.HubSpot.domain.model;
 
+import com.example.fraga.HubSpot.shared.ConverterUtils;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -18,8 +20,8 @@ public class Token {
     private Long expiresIn;
     private String state;
     private String clientSecret;
-    private String encryptedToken;
-    private LocalDateTime expirationDate;
+    private String tokenType;
+    private String dataExpires;
 
     public Token(String clientId, String state, String clientSecret) {
         this.clientId = clientId;
@@ -27,8 +29,8 @@ public class Token {
         this.clientSecret = clientSecret;
     }
 
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @JsonIgnore
     public boolean isExpired() {
-        return expirationDate != null && LocalDateTime.now().isAfter(expirationDate);
+        return LocalDateTime.now().isAfter(LocalDateTime.parse(dataExpires));
     }
 }

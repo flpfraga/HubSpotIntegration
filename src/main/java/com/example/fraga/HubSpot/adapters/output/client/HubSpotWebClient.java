@@ -29,7 +29,7 @@ public class HubSpotWebClient implements AuthClient {
 
     @Override
     @CircuitBreaker(name = "hubspotTokenValidation", fallbackMethod = "fallbackValidateCallback")
-    public Boolean validateCallback(String accessToken) {
+    public Boolean validadeGeneratedToken(String accessToken) {
         return webClient.get()
                 .uri(validationUri)
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
