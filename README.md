@@ -1,6 +1,138 @@
 # HubSpot Integration
 
-Este projeto é uma integração com a API do HubSpot, fornecendo funcionalidades para autenticação, gerenciamento de contatos e processamento de webhooks.
+Projeto de integração com a API do HubSpot utilizando arquitetura hexagonal.
+
+## Tecnologias Utilizadas
+
+- Java 17
+- Spring Boot 3.x
+- MongoDB
+- Redis
+- WebClient
+- Resilience4j
+- Swagger/OpenAPI
+- JUnit 5
+- Mockito
+
+## Estrutura do Projeto
+
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── com/example/fraga/HubSpot/
+│   │       ├── adapters/
+│   │       │   ├── input/
+│   │       │   │   ├── auth/
+│   │       │   │   ├── contact/
+│   │       │   │   └── webhook/
+│   │       │   └── output/
+│   │       │       ├── client/
+│   │       │       ├── repository/
+│   │       │       └── service/
+│   │       ├── application/
+│   │       │   └── service/
+│   │       ├── domain/
+│   │       │   ├── exception/
+│   │       │   └── model/
+│   │       ├── infrastructure/
+│   │       │   ├── config/
+│   │       │   ├── redis/
+│   │       │   └── security/
+│   │       └── port/
+│   │           ├── input/
+│   │           └── output/
+│   └── resources/
+│       └── application.yml
+└── test/
+    └── java/
+        └── com/example/fraga/HubSpot/
+            ├── adapters/
+            │   ├── input/
+            │   └── output/
+            ├── application/
+            └── infrastructure/
+```
+
+## Requisitos
+
+- Java 17
+- Maven
+- Docker
+- Docker Compose
+
+## Configuração do Ambiente
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/seu-usuario/hubspot-integration.git
+cd hubspot-integration
+```
+
+2. Configure as variáveis de ambiente no arquivo `application.yml`:
+```yaml
+hubspot:
+  api:
+    client-id: seu-client-id
+    client-secret: seu-client-secret
+    redirect-uri: http://localhost:8080/callback
+    authorization-url: https://app.hubspot.com/oauth/authorize
+    token-validation-uri: /oauth/v1/access-tokens
+```
+
+3. Execute os serviços necessários usando Docker Compose:
+```bash
+docker-compose up -d
+```
+
+O comando acima iniciará:
+- MongoDB na porta 27017
+- Redis na porta 6379
+
+4. Execute a aplicação:
+```bash
+mvn spring-boot:run
+```
+
+## Endpoints
+
+### Autenticação
+
+- `POST /api/v1/auth`: Gera URL de autorização
+- `GET /api/v1/auth/callback`: Processa callback OAuth
+
+### Contatos
+
+- `POST /api/v1/contacts`: Cria novo contato
+
+### Webhooks
+
+- `POST /api/v1/webhook/contact-creation`: Processa criação de contato
+
+## Documentação
+
+A documentação da API está disponível em:
+- Swagger UI: http://localhost:8080/swagger-ui.html
+- OpenAPI: http://localhost:8080/v3/api-docs
+
+## Testes
+
+Para executar os testes:
+```bash
+mvn test
+```
+
+## Contribuição
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
+
+## Licença
+
+Este projeto está licenciado sob a licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
 ## 🚀 Visão Geral
 
